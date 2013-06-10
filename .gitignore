@@ -1,0 +1,7 @@
+*~
+log
+cabal-dev
+users.json
+site_key.txt
+dist
+snaplets/postgresql-simple
