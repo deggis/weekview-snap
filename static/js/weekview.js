@@ -2,8 +2,52 @@
 
 var weekview_app = {};
 
+// builds tree object from project object list
+// where objects have id and possible parent_id fields.
+function build_project_tree (projects) {
+    var root = { id: 0, name: 'root' };
+   
+    // create reverse index
+    var childrenOfParents = {};
+
+    projects.forEach( function (e,i,a) {
+        var parent;
+        if (e.parent) {
+            parent = e.parent;
+        } else {
+            parent = 0;
+        }
+
+        if ( !childrenOfParents[parent] ) {
+            childrenOfParents[parent] = [];
+        }
+
+        childrenOfParents[parent].push(e);
+    });
+
+    // recursively find & add children
+    var insertChildren = function (parent) {
+        if ( childrenOfParents[parent.id] ) {
+            parent.children = childrenOfParents[parent.id].slice(0); // clone
+            parent.children.forEach( function (child,i,a) {
+                insertChildren(child);
+            });
+            // TODO: sort
+        }
+        
+    };
+
+    insertChildren(root);   
+    
+    return root;
+}
+
+
+var p;
 
 function build_form (projects) {
+    p = projects;
+
     
     var s = '<form>';
     s += '<select>';
