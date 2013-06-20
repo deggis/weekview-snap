@@ -45,19 +45,34 @@ function build_project_tree (projects) {
 
 var p;
 
-function build_form (projects) {
-    p = projects;
+function build_form (root) {
 
+    // appends project and its children to given string
+    var project_options = function (project, s, margin) {
+        var s = '';
+        
+        // TODO: ugly padding; nested options not coming to Bootstrap,
+        // should use different selector
+        
+        var padding = Array(margin*4).join('&nbsp;');
+        var project_option = '<option value="'+project.id+'">' + padding + project.name + '</option>';
+        
+        if (project.name != 'root') {
+            s += project_option;
+        }
+        if (project.children) {
+            project.children.forEach( function(project) {
+                s += project_options(project, s, margin+1);
+            });
+        }
+        return s;
+    };
     
     var s = '<form>';
-    s += '<select>';
-    for (i = 0; i < projects.length; i++) {
-        s += '<option value="'+projects[i].id+'">';
-        s += projects[i].name;
-        s += '</option>';
-    }
+    s += '<select class="span3">';
+    s += project_options(root, s, 0);
     s += '</select>';
-
+    
     var sd = '<div class="input-append date form_datetime">';
     sd += '<input size="16" type="text" value="2012-06-15 14:45" readonly>';
     sd += '<span class="add-on"><i class="icon-th"></i></span>';
@@ -85,7 +100,7 @@ weekview_app.run = function () {
 
     $(div).html('<div id="weekview_form" class="container"></div>');
     $.get('/projects', function(data) {
-        build_form(eval(data));
+        build_form(build_project_tree(eval(data)));
     });
 
 };
