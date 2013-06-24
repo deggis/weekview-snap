@@ -68,29 +68,33 @@ function build_form (root) {
         return s;
     };
     
-    var s = '<form>';
-    s += '<select class="span3">';
-    s += project_options(root, s, 0);
-    s += '</select>';
+    var s = '<form> \
+      <fieldset> \
+      <legend>Session details</legend>';
     
-    var sd = '<div class="input-append date form_datetime">';
-    sd += '<input size="16" type="text" value="2012-06-15 14:45" readonly>';
-    sd += '<span class="add-on"><i class="icon-th"></i></span>';
-    sd += '</div>';
+    
+    s += ' \
+        <label for="project_id">Project</label> \
+        <select> \
+          ' + project_options(root, s, 0) + ' \
+        </select>';
+    
+    s += '<label for="time_start">Begin</label> \
+         <input id="time_start" type="text" placeholder="Time before">';
 
-    s += sd;
-    s += sd;
+    s += '<label for="time_end">End</label> \
+          <input id="time_end" type="text" placeholder="E.g. now">';
 
-    s += '</form>';
+    s += '<label for="description">Description</label> \
+          <input id="description" type="text" placeholder="Something">';
+    
+    s += ' \
+        <br /><button class="btn btn-primary" type="button">Send</button> \
+      ';
+   
+    s += '</fieldset></form>';
 
-    console.log(s);
     $('#weekview_form').html(s);
-    $('.form_datetime').datetimepicker({
-        autoclose: 1,
-        todayHighlight: 1,
-        todayBtn: true,
-        pickerPosition: 'bottom-left'
-    });
 }
 
 
@@ -98,9 +102,19 @@ function build_form (root) {
 weekview_app.run = function () {
     var div = $('#weekview');
 
-    $(div).html('<div id="weekview_form" class="container"></div>');
+    $(div).html('<div class=""> \
+       <div id="weekview_main" class="span6"> \
+         <h2>Add a new session</h2> \
+         <div id="weekview_form" class=""> \
+         </div> \
+       </div> \
+    </div>');
     $.get('/projects', function(data) {
         build_form(build_project_tree(eval(data)));
     });
 
 };
+
+$(document).ready(function() {
+    weekview_app.run();
+});
