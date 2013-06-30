@@ -52,7 +52,7 @@ printProjects = do
 
 printSessions :: Handler App App ()
 printSessions = do
-    sessions :: [Session] <- query_ "select * from weekview_sessions"
+    sessions :: [Session] <- query_ "select * from weekview_sessions order by session_end asc"
     writeJSON sessions
 
 routes :: [(ByteString, Handler App App ())]
