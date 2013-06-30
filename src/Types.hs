@@ -5,8 +5,10 @@
 module Types where
 
 import           Control.Applicative
+import           Control.Monad
 import           Control.Lens hiding ((.=))
 import           Database.PostgreSQL.Simple hiding (query_)
+import           Database.PostgreSQL.Simple.ToField (toField)          
 import           Snap.Snaplet.PostgresqlSimple
 import           Data.Aeson
 import qualified Data.Text as T
@@ -39,7 +41,7 @@ instance ToJSON Project where
 
 
 data Session = Session
-    { _sessionId        :: Int
+    { _sessionId        :: Maybe Int
     , _sessionProjectId :: Int
     , _startTime        :: UTCTime
     , _endTime          :: UTCTime
@@ -59,6 +61,16 @@ instance FromRow Session where
            <*> field -- end
            <*> field -- description
 
+-- instance for new session
+-- for new Sessions use Nothing as id;
+-- updating existing Session with id=Nothing
+-- will result to an error.
+instance ToRow Session where
+    toRow (Session i p s e d) = [toField p
+                                ,toField s
+                                ,toField e
+                                ,toField d]
+
 instance ToJSON Session where
     toJSON (Session i pid s e d) =
         object [ "id" .= i
@@ -66,3 +78,12 @@ instance ToJSON Session where
                , "start" .= s
                , "end" .= e
                , "description" .= d ]
+
+instance FromJSON Session where
+    parseJSON (Object v) = Session
+                       <$> pure Nothing
+                       <*> v .: "project_id"
+                       <*> v .: "start"
+                       <*> v .: "end"
+                       <*> v .: "description"
+    parseJSON _          = mzero

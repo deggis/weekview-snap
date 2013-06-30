@@ -87,7 +87,7 @@ function build_form (root) {
     
     s += ' \
         <label for="project_id">Project</label> \
-        <select> \
+        <select id="project_id"> \
           ' + project_options(root, s, 0) + ' \
         </select>';
     
@@ -101,17 +101,32 @@ function build_form (root) {
           <input id="description" type="text" placeholder="Something">';
     
     s += ' \
-        <br /><button class="btn btn-primary" type="button">Send</button> \
+        <br /><button class="btn btn-primary" type="button" id="send_session">Send</button> \
       ';
    
     s += '</fieldset></form>';
 
     $('#weekview_form').html(s);
+    $('#send_session').click(send_session);
+    
+    
 }
 
+function send_session () {
+    alert('jeah');
+    var session_data = {};
+    session_data.project_id    = parseInt($('#project_id').val(), 10);
+    session_data.start         = $('#time_start').val();
+    session_data.end           = $('#time_end').val();
+    session_data.description   = $('#description').val();
 
+    $.post('/session/save', {'session' : JSON.stringify([session_data])}, function (data) {
+        console.log(data);
+    });
+}
 
 function show_latest_sessions (projects, sessions, container) {
+    $(container).html('<p>Loading ...</p>');
     var project_index = build_id_index(projects);
 
     s = '<table class="table">';
@@ -154,10 +169,10 @@ weekview_app.run = function () {
          </div> \
        </div> \
     </div>');
-    $.get('/projects', function(data) {
+    $.get('/project/all', function(data) {
         var projects = eval(data);
         build_form(build_project_tree(projects));
-        $.get('/sessions', function(data) {
+        $.get('/session/all', function(data) {
             var sessions = eval(data).slice(-6); // get only latest
             show_latest_sessions(projects, sessions, '#weekview_latest');
         });

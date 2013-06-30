@@ -10,6 +10,7 @@ module Site
 ------------------------------------------------------------------------------
 import           Control.Applicative
 import           Control.Lens
+import           Control.Monad.IO.Class
 import           Data.ByteString as B (ByteString,concat)
 import qualified Data.ByteString.Lazy as BL
 import           Data.Maybe
@@ -55,11 +56,27 @@ printSessions = do
     sessions :: [Session] <- query_ "select * from weekview_sessions order by session_end asc"
     writeJSON sessions
 
+-- FIXME: tidy up; not sure if instance ToRow Session implemented for this is a good idea.
+saveSession :: Handler App App ()
+saveSession = do
+    p <- getParam "session"
+    case p of
+        Just str -> do
+            case (JSON.decode' (BL.fromStrict str)) of
+                Just ((s::Session):_) -> do
+                    execute "insert into weekview_sessions (project_id,session_start,session_end,description) values (?,?,?,?)" s
+                    writeText $ T.pack (show s)
+                Nothing -> writeText "parse erorr" 
+        Nothing -> do
+            writeText "no param"
+    
+
 routes :: [(ByteString, Handler App App ())]
 routes = [ ("/login",    with auth handleLoginSubmit)
          , ("/logout",   with auth handleLogout)
-         , ("/projects", printProjects)
-         , ("/sessions", printSessions)
+         , ("/project/all", printProjects)
+         , ("/session/all", printSessions)
+         , ("/session/save", saveSession)
          , ("",          serveDirectory "static")
          ]
 

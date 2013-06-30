@@ -36,7 +36,8 @@ Executable weekview-snap
     xmlhtml                   >= 0.1,
     snaplet-postgresql-simple,
     postgresql-simple,
-    aeson
+    aeson,
+    transformers
 
   if flag(old-base)
     build-depends:
